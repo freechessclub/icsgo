@@ -1,4 +1,4 @@
-// Copyright © 2018 Free Chess Club <hi@freechess.club>
+// Copyright © 2019 Free Chess Club <hi@freechess.club>
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -15,7 +15,7 @@ const (
 )
 
 // Encode a byte array using the encoding scheme mandated by timeseal2
-func Encode(b []byte, l int) []byte {
+func encode(b []byte, l int) []byte {
 	s := make([]byte, l+30)
 	copy(s[:l], b)
 	s[l] = 0x18
