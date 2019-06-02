@@ -1,0 +1,78 @@
+// Copyright © 2019 Free Chess Club <hi@freechess.club>
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+syntax = 'proto3';
+
+package icsgo;
+
+// channel tell
+message ChannelTell {
+	// channel name
+	string channel = 1;
+	// handle of the user who made the tell
+	string handle = 2;
+	// message / body of the tell
+	string message = 3;
+}
+
+// private tell
+message PrivateTell {
+	// handle of the user who made the tell
+	string handle = 1;
+	// message / body of the tell
+	string message = 2;
+}
+
+// a game start message
+message GameStart {
+	// id of the game that was started
+	uint32 game_id = 1;
+	// handle of player one
+	string player_one = 2;
+	// handle of player two
+	string player_two = 3;
+}
+
+// a game end message
+message GameEnd {
+	// id of the game that was ended
+	uint32 game_id = 1;
+	// handle of the user who won the game, if it wasn't a draw
+	string winner = 2;
+	// handle of the user who lost the game, if it wasn't a draw
+	string loser = 3;
+	enum Reason {
+		RESIGN = 0;
+		DISCONNECT = 1;
+		CHECKMATE = 2;
+		TIMEFORFEIT = 3;
+		DRAW = 4;
+		ADJOURN = 5;
+		ABORT = 6;
+	}
+	Reason reason = 4;
+	// message associated with the game result
+	string message = 5;
+}
+
+// a game move message
+message GameMove {
+	string fen = 1;
+	string turn = 2;
+	uint32 game_id = 3;
+	string white_name = 4;
+	string black_name = 5;
+	uint32 role = 6;
+	uint32 time = 7;
+	uint32 inc = 8;
+	uint32 white_time = 9;
+	uint32 black_time = 10;
+	string move = 11;
+}
+
+// a generic message from the server
+message Message {
+	string message = 1;
+}
