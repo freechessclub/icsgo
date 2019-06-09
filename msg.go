@@ -116,9 +116,6 @@ func decodeMessages(msg []byte) []interface{} {
 		return nil
 	}
 
-	var msgs []interface{}
-	var out interface{}
-
 	msg = toldMsgRE.ReplaceAll(msg, []byte{})
 	if msg == nil || bytes.Equal(msg, []byte("\n")) {
 		return nil
@@ -128,6 +125,7 @@ func decodeMessages(msg []byte) []interface{} {
 	if matches != nil && len(matches) >= 18 {
 		m := bytes.Split(msg, []byte("\n"))
 		if len(m) > 1 {
+			var msgs []interface{}
 			for i := 0; i < len(m); i++ {
 				if len(m[i]) > 0 {
 					msgs = append(msgs, decodeMessages(m[i]))
@@ -143,27 +141,31 @@ func decodeMessages(msg []byte) []interface{} {
 		}
 		fen += style12ToFEN(matches[8][:])
 
-		out = &GameMove{
-			Fen:       fen,
-			Turn:      string(matches[9][:]),
-			GameId:    unsafeAtoi(matches[10][:]),
-			WhiteName: string(matches[11][:]),
-			BlackName: string(matches[12][:]),
-			Role:      unsafeAtoi(matches[13][:]),
-			Time:      unsafeAtoi(matches[14][:]),
-			Inc:       unsafeAtoi(matches[15][:]),
-			WhiteTime: unsafeAtoi(matches[16][:]),
-			BlackTime: unsafeAtoi(matches[17][:]),
-			Move:      string(matches[18][:]),
+		return []interface{}{
+			&GameMove{
+				Fen:       fen,
+				Turn:      string(matches[9][:]),
+				GameId:    unsafeAtoi(matches[10][:]),
+				WhiteName: string(matches[11][:]),
+				BlackName: string(matches[12][:]),
+				Role:      unsafeAtoi(matches[13][:]),
+				Time:      unsafeAtoi(matches[14][:]),
+				Inc:       unsafeAtoi(matches[15][:]),
+				WhiteTime: unsafeAtoi(matches[16][:]),
+				BlackTime: unsafeAtoi(matches[17][:]),
+				Move:      string(matches[18][:]),
+			},
 		}
 	}
 
 	matches = gameStartRE.FindSubmatch(msg)
 	if matches != nil && len(matches) > 2 {
-		out = &GameStart{
-			GameId:    unsafeAtoi(matches[1][:]),
-			PlayerOne: string(matches[2][:]),
-			PlayerTwo: string(matches[3][:]),
+		return []interface{}{
+			&GameStart{
+				GameId:    unsafeAtoi(matches[1][:]),
+				PlayerOne: string(matches[2][:]),
+				PlayerTwo: string(matches[3][:]),
+			},
 		}
 	}
 
@@ -175,36 +177,41 @@ func decodeMessages(msg []byte) []interface{} {
 		action := string(matches[5][:])
 
 		winner, loser, reason := getGameResult(p1, p2, who, action)
-		out = &GameEnd{
-			GameId:  unsafeAtoi(matches[1][:]),
-			Winner:  winner,
-			Loser:   loser,
-			Reason:  reason,
-			Message: string(msg),
+		return []interface{}{
+			&GameEnd{
+				GameId:  unsafeAtoi(matches[1][:]),
+				Winner:  winner,
+				Loser:   loser,
+				Reason:  reason,
+				Message: string(msg),
+			},
 		}
 	}
 
 	matches = chTellRE.FindSubmatch(msg)
 	if matches != nil && len(matches) > 3 {
-		out = &ChannelTell{
-			Channel: string(matches[2][:]),
-			Handle:  string(matches[1][:]),
-			Message: string(bytes.Replace(matches[3][:], []byte("\n"), []byte{}, -1)),
+		return []interface{}{
+			&ChannelTell{
+				Channel: string(matches[2][:]),
+				Handle:  string(matches[1][:]),
+				Message: string(bytes.Replace(matches[3][:], []byte("\n"), []byte{}, -1)),
+			},
 		}
 	}
 
 	matches = pTellRE.FindSubmatch(msg)
 	if matches != nil && len(matches) > 2 {
-		out = &PrivateTell{
-			Handle:  string(matches[1][:]),
-			Message: string(bytes.Replace(matches[2][:], []byte("\n"), []byte{}, -1)),
+		return []interface{}{
+			&PrivateTell{
+				Handle:  string(matches[1][:]),
+				Message: string(bytes.Replace(matches[2][:], []byte("\n"), []byte{}, -1)),
+			},
 		}
 	}
 
-	out = &Message{
-		Message: string(msg),
+	return []interface{}{
+		&Message{
+			Message: string(msg),
+		},
 	}
-
-	msgs = append(msgs, out)
-	return msgs
 }
