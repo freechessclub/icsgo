@@ -127,6 +127,11 @@ func (client *Client) Recv() ([]interface{}, error) {
 	return decodeMessages(out), nil
 }
 
+// Username returns the username of user associated with the client
+func (client *Client) Username() string {
+	return client.username
+}
+
 // Destroy destroys a client instance
 func (client *Client) Destroy() {
 	client.Send("exit")
