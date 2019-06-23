@@ -11,16 +11,16 @@ package icsgo;
 message ChannelTell {
 	// channel name
 	string channel = 1;
-	// handle of the user who made the tell
-	string handle = 2;
+	// user who made the tell
+	string user = 2;
 	// message / body of the tell
 	string message = 3;
 }
 
 // private tell
 message PrivateTell {
-	// handle of the user who made the tell
-	string handle = 1;
+	// user who made the tell
+	string user = 1;
 	// message / body of the tell
 	string message = 2;
 }
@@ -39,7 +39,7 @@ message GameStart {
 message GameEnd {
 	// id of the game that was ended
 	uint32 game_id = 1;
-	// handle of the user who won the game, if it wasn't a draw
+	// user who won the game, if it wasn't a draw
 	string winner = 2;
 	// handle of the user who lost the game, if it wasn't a draw
 	string loser = 3;

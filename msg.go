@@ -193,7 +193,7 @@ func decodeMessages(msg []byte) []interface{} {
 		return []interface{}{
 			&ChannelTell{
 				Channel: string(matches[2][:]),
-				Handle:  string(matches[1][:]),
+				User:    string(matches[1][:]),
 				Message: string(bytes.Replace(matches[3][:], []byte("\n"), []byte{}, -1)),
 			},
 		}
@@ -203,7 +203,7 @@ func decodeMessages(msg []byte) []interface{} {
 	if matches != nil && len(matches) > 2 {
 		return []interface{}{
 			&PrivateTell{
-				Handle:  string(matches[1][:]),
+				User:    string(matches[1][:]),
 				Message: string(bytes.Replace(matches[2][:], []byte("\n"), []byte{}, -1)),
 			},
 		}
