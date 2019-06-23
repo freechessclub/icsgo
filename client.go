@@ -23,7 +23,6 @@ type Config struct {
 	ICSPrompt        string
 	DisableKeepAlive bool
 	DisableTimeseal  bool
-	TimesealHello    string
 	ConnTimeout      int
 	ConnRetries      int
 	Debug            bool
@@ -36,7 +35,6 @@ var DefaultConfig = &Config{
 	ICSPrompt:        "fics%",
 	DisableKeepAlive: false,
 	DisableTimeseal:  false,
-	TimesealHello:    "TIMESEAL2|freeseal|icsgo|",
 	ConnTimeout:      2,
 	ConnRetries:      5,
 	Debug:            false,
@@ -67,10 +65,6 @@ func getConfig(cfg *Config) *Config {
 		cfg.ICSPrompt = DefaultConfig.ICSPrompt
 	}
 
-	if cfg.TimesealHello == "" {
-		cfg.TimesealHello = DefaultConfig.TimesealHello
-	}
-
 	if cfg.ConnTimeout == 0 {
 		cfg.ConnTimeout = DefaultConfig.ConnTimeout
 	}
@@ -90,10 +84,6 @@ func NewClient(cfg *Config, addr, username, password string) (*Client, error) {
 	conn, err := Dial(addr, retries, timeout, !cfg.DisableTimeseal, cfg.Debug)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new connection")
-	}
-
-	if !cfg.DisableTimeseal {
-		conn.Write(cfg.TimesealHello)
 	}
 
 	username, err = login(conn, username, password, cfg)
@@ -152,31 +142,35 @@ func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 	}
 
 	// wait for the login prompt
-	_, err := conn.ReadUntil(cfg.UserPrompt)
+	_, err := conn.ReadUntilTimeout(cfg.UserPrompt, 10*time.Second)
 	if err != nil {
 		return "", fmt.Errorf("creating new login session for %s: %v", username, err)
 	}
 
-	conn.Write(username)
+	if cfg.DisableTimeseal {
+		conn.Write(username + "\n")
+	} else {
+		conn.Write(username)
+	}
 
 	var prompt string
 	// guests have no passwords
 	if username != "guest" && len(password) > 0 {
 		prompt = cfg.PasswordPrompt
 	} else {
-		prompt = ":"
-		password = ""
+		prompt = "Press return to enter the server as"
+		password = "\n"
 	}
 
 	// wait for the password prompt
-	_, err = conn.ReadUntil(prompt)
+	_, err = conn.ReadUntilTimeout(prompt, 10*time.Second)
 	if err != nil {
 		return "", fmt.Errorf("creating new login session for %s: %v", username, err)
 	}
 
 	conn.Write(password)
 
-	out, err := conn.ReadUntil("****\n")
+	out, err := conn.ReadUntilTimeout("****\n", 10*time.Second)
 	if err != nil {
 		return "", fmt.Errorf("failed authentication for %s: %v", username, err)
 	}
@@ -185,7 +179,7 @@ func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 	user := re.FindSubmatch(out)
 	if user != nil && len(user) > 1 {
 		username = string(user[1][:])
-		log.Printf("Logged in as %s", username)
+		log.Printf("logged in as %s", username)
 		return username, nil
 	}
 

@@ -14,6 +14,10 @@ import (
 	"github.com/ziutek/telnet"
 )
 
+const (
+	timesealHello = "TIMESEAL2|freeseal|icsgo|"
+)
+
 // Conn represents a connection to the ICS server
 type Conn struct {
 	// whether timeseal is enabled on the connection
@@ -45,13 +49,19 @@ func Dial(addr string, retries int, timeout time.Duration, timeseal, debug bool)
 		return nil, fmt.Errorf("connecting to server %s: %v", addr, err)
 	}
 
-	log.Printf("connected to ICS server %s!", addr)
+	log.Printf("connected to ICS server %s! (timeseal: %t)", addr, timeseal)
 
-	return &Conn{
+	c := &Conn{
 		timeseal: timeseal,
 		debug:    debug,
 		conn:     conn,
-	}, nil
+	}
+
+	if timeseal {
+		c.Write(timesealHello)
+	}
+
+	return c, nil
 }
 
 // ReadUntilTimeout reads messages from the connection until the given prompt is encountered
@@ -97,16 +107,16 @@ func (c *Conn) ReadUntil(prompt string) ([]byte, error) {
 // Write writes the given message on the open connection
 func (c *Conn) Write(msg string) error {
 	c.conn.SetWriteDeadline(time.Now().Add(20 * time.Second))
-
 	if c.debug {
 		log.Printf("> %s", msg)
 	}
 
-	bs := []byte(msg + "\n")
+	bs := []byte(msg)
 	if c.timeseal {
 		bs = encode(bs, len(msg))
 	}
-	_, err := c.conn.Write(bs)
+
+	_, err := c.conn.Conn.Write(bs)
 	return err
 }
 
