@@ -128,7 +128,7 @@ func decodeMessages(msg []byte) []interface{} {
 			var msgs []interface{}
 			for i := 0; i < len(m); i++ {
 				if len(m[i]) > 0 {
-					msgs = append(msgs, decodeMessages(m[i]))
+					msgs = append(msgs, decodeMessages(m[i])...)
 				}
 			}
 			return msgs
