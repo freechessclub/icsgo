@@ -43,17 +43,8 @@ message GameEnd {
 	string winner = 2;
 	// handle of the user who lost the game, if it wasn't a draw
 	string loser = 3;
-	enum Reason {
-		UNKNOWN = 0;
-		RESIGN = 1;
-		DISCONNECT = 2;
-		CHECKMATE = 3;
-		TIMEFORFEIT = 4;
-		DRAW = 5;
-		ADJOURN = 6;
-		ABORT = 7;
-	}
-	Reason reason = 4;
+	// reason for game end
+	uint32 reason = 4;
 	// message associated with the game result
 	string message = 5;
 }

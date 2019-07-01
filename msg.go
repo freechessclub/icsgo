@@ -21,6 +21,18 @@ var (
 	toldMsgRE   *regexp.Regexp
 )
 
+// type of game end messages
+const (
+	Resign = iota
+	Disconnect
+	Checkmate
+	TimeForfeit
+	Draw
+	Adjourn
+	Abort
+	Unknown
+)
+
 func init() {
 	// game move
 	// <12> rnbqkb-r pppppppp -----n-- -------- ----P--- -------- PPPPKPPP RNBQ-BNR B -1 0 0 1 1 0 7 Newton Einstein 1 2 12 39 39 119 122 2 K/e1-e2 (0:06) Ke2 0
@@ -67,36 +79,36 @@ func unsafeAtoi(b []byte) uint32 {
 	return uint32(i)
 }
 
-func getGameResult(p1, p2, who, action string) (string, string, GameEnd_Reason) {
+func getGameResult(p1, p2, who, action string) (string, string, uint32) {
 	action = strings.TrimSpace(action)
 	switch action {
 	case "resigns":
 		if p1 == who {
-			return p2, p1, GameEnd_RESIGN
+			return p2, p1, Resign
 		} else if p2 == who {
-			return p1, p2, GameEnd_RESIGN
+			return p1, p2, Resign
 		}
 	case "forfeits by disconnection":
 		if p1 == who {
-			return p2, p1, GameEnd_DISCONNECT
+			return p2, p1, Disconnect
 		} else if p2 == who {
-			return p1, p2, GameEnd_DISCONNECT
+			return p1, p2, Disconnect
 		}
 	case "checkmated":
 		if p1 == who {
-			return p2, p1, GameEnd_CHECKMATE
+			return p2, p1, Checkmate
 		} else if p2 == who {
-			return p1, p2, GameEnd_CHECKMATE
+			return p1, p2, Checkmate
 		}
 	case "forfeits on time":
 		if p1 == who {
-			return p2, p1, GameEnd_TIMEFORFEIT
+			return p2, p1, TimeForfeit
 		} else if p2 == who {
-			return p1, p2, GameEnd_TIMEFORFEIT
+			return p1, p2, TimeForfeit
 		}
 	case "aborted on move 1":
 	case "aborted by mutual agreement":
-		return p1, p2, GameEnd_ABORT
+		return p1, p2, Abort
 	case "drawn by mutual agreement":
 	case "drawn because both players ran out of time":
 	case "drawn by repetition":
@@ -106,11 +118,11 @@ func getGameResult(p1, p2, who, action string) (string, string, GameEnd_Reason) 
 	case "player has mating material":
 	case "drawn by adjudication":
 	case "drawn by stalemate":
-		return p1, p2, GameEnd_DRAW
+		return p1, p2, Draw
 	case "adjourned by mutual agreement":
-		return p1, p2, GameEnd_ADJOURN
+		return p1, p2, Adjourn
 	}
-	return p1, p2, -1
+	return p1, p2, Unknown
 }
 
 func decodeMessages(msg []byte) []interface{} {
