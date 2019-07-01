@@ -44,13 +44,14 @@ message GameEnd {
 	// handle of the user who lost the game, if it wasn't a draw
 	string loser = 3;
 	enum Reason {
-		RESIGN = 0;
-		DISCONNECT = 1;
-		CHECKMATE = 2;
-		TIMEFORFEIT = 3;
-		DRAW = 4;
-		ADJOURN = 5;
-		ABORT = 6;
+		UNKNOWN = 0;
+		RESIGN = 1;
+		DISCONNECT = 2;
+		CHECKMATE = 3;
+		TIMEFORFEIT = 4;
+		DRAW = 5;
+		ADJOURN = 6;
+		ABORT = 7;
 	}
 	Reason reason = 4;
 	// message associated with the game result

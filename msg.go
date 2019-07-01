@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -67,6 +68,7 @@ func unsafeAtoi(b []byte) uint32 {
 }
 
 func getGameResult(p1, p2, who, action string) (string, string, GameEnd_Reason) {
+	action = strings.TrimSpace(action)
 	switch action {
 	case "resigns":
 		if p1 == who {
