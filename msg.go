@@ -154,6 +154,8 @@ func decodeMessages(msg []byte) []interface{} {
 			fen += "/"
 		}
 		fen += style12ToFEN(matches[8][:])
+		r, _ := strconv.Atoi(string(matches[13][:]))
+		role := int32(r)
 
 		return []interface{}{
 			&GameMove{
@@ -162,7 +164,7 @@ func decodeMessages(msg []byte) []interface{} {
 				GameId:    unsafeAtoi(matches[10][:]),
 				WhiteName: string(matches[11][:]),
 				BlackName: string(matches[12][:]),
-				Role:      unsafeAtoi(matches[13][:]),
+				Role:      role,
 				Time:      unsafeAtoi(matches[14][:]),
 				Inc:       unsafeAtoi(matches[15][:]),
 				WhiteTime: unsafeAtoi(matches[16][:]),

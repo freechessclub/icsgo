@@ -56,7 +56,7 @@ message GameMove {
 	uint32 game_id = 3;
 	string white_name = 4;
 	string black_name = 5;
-	uint32 role = 6;
+	int32 role = 6;
 	uint32 time = 7;
 	uint32 inc = 8;
 	uint32 white_time = 9;
