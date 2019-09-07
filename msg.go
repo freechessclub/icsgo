@@ -23,14 +23,14 @@ var (
 
 // type of game end messages
 const (
-	Resign = iota
+	Unknown = iota
+	Resign
 	Disconnect
 	Checkmate
 	TimeForfeit
 	Draw
 	Adjourn
 	Abort
-	Unknown
 )
 
 func init() {
