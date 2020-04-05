@@ -104,6 +104,9 @@ func NewClient(cfg *Config, addr, username, password string) (*Client, error) {
 
 // Send sends a message to the ICS server
 func (client *Client) Send(msg string) error {
+	if client.config.DisableTimeseal {
+		msg += "\n"
+	}
 	return client.conn.Write(msg)
 }
 
