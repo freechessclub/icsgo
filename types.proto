@@ -6,6 +6,7 @@
 syntax = 'proto3';
 
 package icsgo;
+option go_package = "./icsgo";
 
 // channel tell
 message ChannelTell {
@@ -61,7 +62,8 @@ message GameMove {
 	uint32 inc = 8;
 	uint32 white_time = 9;
 	uint32 black_time = 10;
-	string move = 11;
+	uint32 move_no = 11;
+	string move = 12;
 }
 
 // a generic message from the server
