@@ -178,7 +178,16 @@ func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 		return "", fmt.Errorf("failed authentication for %s: %v", username, err)
 	}
 
-	re := regexp.MustCompile("\\*\\*\\*\\* Starting FICS session as ([a-zA-Z]+)(?:\\(U\\))?")
+	re := regexp.MustCompile("\\*\\*\\*\\* ([a-zA-Z]+) is already logged in - kicking them out\\.")
+	loggedin := re.FindSubmatch(out)
+	if loggedin != nil && len(loggedin) > 0 {
+		out, err = conn.ReadUntilTimeout("****\n", 10*time.Second)
+		if err != nil {
+			return "", fmt.Errorf("failed authentication for %s: %v", username, err)
+		}
+	}
+
+	re = regexp.MustCompile("\\*\\*\\*\\* Starting FICS session as ([a-zA-Z]+)(?:\\(U\\))?")
 	user := re.FindSubmatch(out)
 	if user != nil && len(user) > 1 {
 		username = string(user[1][:])
