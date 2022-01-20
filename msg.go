@@ -18,6 +18,7 @@ var (
 	gameEndRE   *regexp.Regexp
 	chTellRE    *regexp.Regexp
 	pTellRE     *regexp.Regexp
+	kibitzRE    *regexp.Regexp
 	toldMsgRE   *regexp.Regexp
 )
 
@@ -47,10 +48,13 @@ func init() {
 	chTellRE = regexp.MustCompile(`(?s)^([a-zA-Z]+)(?:\([A-Z\*]+\))*\(([0-9]+)\):\s+(.*)`)
 
 	// private tell
-	pTellRE = regexp.MustCompile(`(?s)^([a-zA-Z]+)(?:[\(\[][A-Z0-9\*\-]+[\)\]])* (?:tells you|says|kibitzes):\s+(.*)`)
+	pTellRE = regexp.MustCompile(`(?s)^([a-zA-Z]+)(?:[\(\[][A-Z0-9\*\-]+[\)\]])* (?:tells you|says):\s+(.*)`)
+
+	// kibitz/whispers
+	kibitzRE = regexp.MustCompile(`(?s)^([a-zA-Z]+)(?:\([A-Z0-9\*\-]+\))*\[([0-9]+)\] (?:kibitzes|whispers):\s+(.*)`)
 
 	// told status
-	toldMsgRE = regexp.MustCompile(`\(told .+\)`)
+	toldMsgRE = regexp.MustCompile(`\((?:told|kibitzed) .+\)`)
 }
 
 func style12ToFEN(b []byte) string {
@@ -222,6 +226,17 @@ func decodeMessages(msg []byte) []interface{} {
 			&PrivateTell{
 				User:    string(matches[1][:]),
 				Message: string(bytes.Replace(matches[2][:], []byte("\n"), []byte{}, -1)),
+			},
+		}
+	}
+
+	matches = kibitzRE.FindSubmatch(msg)
+	if matches != nil && len(matches) > 3 {
+		return []interface{}{
+			&ChannelTell{
+				Channel: "Game " + string(matches[2][:]),
+				User:    string(matches[1][:]),
+				Message: string(bytes.Replace(matches[3][:], []byte("\n"), []byte{}, -1)),
 			},
 		}
 	}
