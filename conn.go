@@ -58,7 +58,7 @@ func Dial(addr string, retries int, timeout time.Duration, timeseal, debug bool)
 	}
 
 	if timeseal {
-		c.Write(timesealHello)
+		c.Write([]byte(timesealHello))
 	}
 
 	return c, nil
@@ -84,7 +84,7 @@ func (c *Conn) ReadUntilTimeout(prompt string, timeout time.Duration) ([]byte, e
 			if i == -1 {
 				break
 			}
-			c.Write(string([]byte{0x02, 0x39}))
+			c.Write([]byte{0x02, 0x39})
 			bs = append(bs[:i], bs[i+4:]...)
 		}
 	}
@@ -105,18 +105,21 @@ func (c *Conn) ReadUntil(prompt string) ([]byte, error) {
 }
 
 // Write writes the given message on the open connection
-func (c *Conn) Write(msg string) error {
-	c.conn.SetWriteDeadline(time.Now().Add(20 * time.Second))
+func (c *Conn) Write(msg []byte) error {
 	if c.debug {
-		log.Printf("> %s", msg)
+		log.Printf("> %s", string(msg))
 	}
 
-	bs := []byte(msg)
 	if c.timeseal {
-		bs = encode(bs, len(msg))
+		msg = encode(msg, len(msg))
 	}
+	return c.RawWrite(msg)
+}
 
-	_, err := c.conn.Conn.Write(bs)
+// RawWrite writes the given message on the open connection without timeseal encoding
+func (c *Conn) RawWrite(msg []byte) error {
+	c.conn.SetWriteDeadline(time.Now().Add(20 * time.Second))
+	_, err := c.conn.Conn.Write(msg)
 	return err
 }
 

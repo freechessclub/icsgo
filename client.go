@@ -103,11 +103,16 @@ func NewClient(cfg *Config, addr, username, password string) (*Client, error) {
 }
 
 // Send sends a message to the ICS server
-func (client *Client) Send(msg string) error {
+func (client *Client) Send(msg []byte) error {
 	if client.config.DisableTimeseal {
-		msg += "\n"
+		msg = append(msg, "\n"...)
 	}
 	return client.conn.Write(msg)
+}
+
+// Send sends a timeseal-encoded message to the ICS server
+func (client *Client) RawSend(msg []byte) error {
+	return client.conn.RawWrite(msg)
 }
 
 // Recv receives messages from the ICS server
@@ -127,14 +132,14 @@ func (client *Client) Username() string {
 
 // Destroy destroys a client instance
 func (client *Client) Destroy() {
-	client.Send("exit")
+	client.Send([]byte("exit"))
 	client.conn.Close()
 }
 
 func keepAlive(conn *Conn) {
 	for {
 		time.Sleep(58 * time.Minute)
-		conn.Write("ping")
+		conn.Write([]byte("ping"))
 	}
 }
 
@@ -151,9 +156,9 @@ func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 	}
 
 	if cfg.DisableTimeseal {
-		conn.Write(username + "\n")
+		conn.Write([]byte(username + "\n"))
 	} else {
-		conn.Write(username)
+		conn.Write([]byte(username))
 	}
 
 	var prompt string
@@ -171,7 +176,7 @@ func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 		return "", fmt.Errorf("creating new login session for %s: %v", username, err)
 	}
 
-	conn.Write(password)
+	conn.Write([]byte(password))
 
 	out, err := conn.ReadUntilTimeout("****\n", 10*time.Second)
 	if err != nil {
