@@ -139,11 +139,17 @@ func (client *Client) Destroy() {
 func keepAlive(conn *Conn) {
 	for {
 		time.Sleep(58 * time.Minute)
-		conn.Write([]byte("ping"))
+		if err := conn.Write(keepAliveMessage()); err != nil {
+			return
+		}
+		conn.conn.SetReadDeadline(time.Now().Add(2 * time.Hour))
 	}
 }
 
-//
+func keepAliveMessage() []byte {
+	return []byte("ping\n")
+}
+
 func login(conn *Conn, username, password string, cfg *Config) (string, error) {
 	if conn == nil {
 		return "", fmt.Errorf("client not connected")
